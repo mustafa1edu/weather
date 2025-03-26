@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Mustafa.EDU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --error: #f72585;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #b7ff00 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 10px solid;
+        }
+        
+        main {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            transition: all 0.3s;
+            border: 5px solid;
+        }
+        
+        main.error {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            margin: 0 auto 15px;
+            display: block;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+        
+        form {
+            display: flex;
+            margin-bottom: 25px;
+        }
+        
+        #name {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        form button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        form button:hover {
+            background: var(--secondary);
+        }
+        
+        .result {
+            margin-top: 20px;
+        }
+        
+        .name {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .name figcaption {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .name img {
+            width: 32px;
+            height: 24px;
+            border-radius: 3px;
+        }
+        
+        .forecast {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .forecast-day {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .forecast-day h3 {
+            margin-bottom: 10px;
+            color: var(--secondary);
+        }
+        
+        .forecast-day img {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+        }
+        
+        .forecast-day p {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .forecast-day i {
+            margin-right: 8px;
+            color: var(--accent);
+        }
+        
+        .error-message {
+            color: var(--error);
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+            display: none;
+        }
+       
+    </style>
+
+
+</head>
+<body>
+    
+    
+
+   <main>
+    <img class="logo" src="photo_2025-03-04_22-59-00.jpg" alt="Logo">
+    <h1>Weather Mustafa.EDU</h1>
+    
+    <form>
+        <input type="text" id="name" placeholder="Enter city name..." autocomplete="off">
+        <button type="submit">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <a href="../profile.html"><img src="right.png" alt="" style="width: 40px; padding-left: 7px;padding-top: 7px; ;"></a>
+    </form>
+    
+    <div class="error-message" id="errorMessage"></div>
+    
+    <section class="result">
+        <figure class="name">
+            <figcaption id="cityName">Erbil</figcaption>
+            <img id="cityFlag" src="https://upload.wikimedia.org/wikipedia/commons/3/35/Flag_of_Kurdistan.svg" alt="Flag">
+        </figure>
+        
+        <div class="forecast" id="forecastContainer"></div>
+    </section>
+   </main>
+
+   <script>
+       const apiKey = '9505fd1df737e20152fbd78cdb289b6a';
+       const baseUrl = 'https://api.openweathermap.org/data/2.5/forecast?units=metric&appid=' + apiKey;
+       
+       const kurdistanCities = ["Erbil", "Soran", "Duhok", "Sulaymaniyah", "Halabja", "Zakho", "Kalar", "Koya", "Shaqlawa", "Akre", "Chamchamal", "Ranya"];
+       
+       document.querySelector("form").addEventListener("submit", (e) => {
+           e.preventDefault();
+           const cityName = document.getElementById('name').value.trim();
+           if (cityName !== '') {
+               searchWeather(cityName);
+           }
+       });
+       
+       const searchWeather = (cityName) => {
+           const fullUrl = `${baseUrl}&q=${cityName},IQ`;
+           
+           fetch(fullUrl)
+               .then(response => {
+                   if (!response.ok) {
+                       throw new Error('City not found');
+                   }
+                   return response.json();
+               })
+               .then(data => {
+                   if (data.cod === "200") {
+                       displayWeatherData(data);
+                       document.getElementById('errorMessage').style.display = 'none';
+                   } else {
+                       throw new Error(data.message || 'City not found');
+                   }
+               })
+               .catch(error => {
+                   showError("🌍 " + error.message + "! Try another Kurdistan city.");
+               });
+       };
+       
+       const displayWeatherData = (data) => {
+           document.getElementById('cityName').textContent = data.city.name;
+           document.getElementById('cityFlag').src = "https://upload.wikimedia.org/wikipedia/commons/3/35/Flag_of_Kurdistan.svg";
+           
+           const forecastContainer = document.getElementById('forecastContainer');
+           forecastContainer.innerHTML = "";
+           
+           const dailyForecasts = extractDailyForecast(data.list);
+           
+           dailyForecasts.forEach(day => {
+               const dayElement = document.createElement('div');
+               dayElement.className = 'forecast-day';
+               dayElement.innerHTML = `
+                   <h3>${formatDate(day.date)}</h3>
+                   <img src="https://openweathermap.org/img/wn/${day.icon}@2x.png" alt="Weather Icon">
+                   <p><i class="fa-solid fa-temperature-high"></i> ${Math.round(day.temp)}°C</p>
+                   <p><i class="fa-solid fa-cloud"></i> ${capitalizeFirstLetter(day.description)}</p>
+                   <p><i class="fa-solid fa-droplet"></i> ${day.humidity}%</p>
+                   <p><i class="fa-solid fa-gauge-high"></i> ${day.pressure} hPa</p>
+               `;
+               forecastContainer.appendChild(dayElement);
+           });
+       };
+       
+       const extractDailyForecast = (list) => {
+           const dailyData = {};
+           
+           list.forEach(item => {
+               const date = item.dt_txt.split(' ')[0];
+               if (!dailyData[date]) {
+                   dailyData[date] = {
+                       date: date,
+                       temp: item.main.temp,
+                       icon: item.weather[0].icon,
+                       description: item.weather[0].description,
+                       humidity: item.main.humidity,
+                       pressure: item.main.pressure
+                   };
+               }
+           });
+           
+           return Object.values(dailyData).slice(0, 3);
+       };
+       
+       const showError = (message) => {
+           const errorElement = document.getElementById('errorMessage');
+           errorElement.textContent = message;
+           errorElement.style.display = 'block';
+           document.querySelector('main').classList.add('error');
+           
+           setTimeout(() => {
+               document.querySelector('main').classList.remove('error');
+           }, 1000);
+       };
+       
+       const formatDate = (dateString) => {
+           const options = { weekday: 'long', month: 'short', day: 'numeric' };
+           return new Date(dateString).toLocaleDateString('en-US', options);
+       };
+       
+       const capitalizeFirstLetter = (string) => {
+           return string.split(' ').map(word => 
+               word.charAt(0).toUpperCase() + word.slice(1)
+           ).join(' ');
+       };
+       
+       // Initialize with a random Kurdistan city
+       const randomCity = kurdistanCities[Math.floor(Math.random() * kurdistanCities.length)];
+       searchWeather(randomCity);
+   </script>
+
+   
+
+
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Double Click Heart</title>
+    <br>
+    <br>
+    <b><P2>دەبڵ کلیک لەسەر لۆگۆ بۆ ڵایک کردن</P2></b>
+  </head>
+  <body>
+    <h3>Double click on the image to <i class="fas fa-heart"></i> it</h3>
+    <small>You liked it <span id="times">0</span> times</small>
+    <div class="loveMe"></div>
+    <style>@import url("./photo_2025-03-04_22-59-00.jpg");
+o
+        * {
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: "Oswald", sans-serif;
+          text-align: center;
+          overflow: hidden;
+          margin: 0;
+        }
+        
+        h3 {
+          margin-bottom: 0;
+          text-align: center;
+        }
+        
+        small {
+          display: block;
+          margin-bottom: 20px;
+          text-align: center;
+        }
+        
+        .fa-heart {
+          color: red;
+        }
+        
+        .loveMe {
+          height: 440px;
+          width: 300px;
+    
+          background: url("./photo_2025-03-04_22-59-00.jpg")
+            no-repeat center center/cover;
+          margin: auto;
+          cursor: pointer;
+          max-width: 100%;
+          position: relative;
+          box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+        }
+        
+        .loveMe .fa-heart {
+          position: absolute;
+          animation: grow 0.6s linear;
+          transform: translate(-50%, -50%) scale(0);
+        }
+        
+        @keyframes grow {
+          to {
+            transform: translate(-50%, -50%) scale(10);
+            opacity: 0;
+          }
+        }
+        </style>
+        <script>
+            const loveMe = document.querySelector(".loveMe");
+const times = document.querySelector("#times");
+
+let clickTime = 0;
+let timesClicked = 0;
+
+const createHeart = (e) => {
+  const heart = document.createElement("i");
+  heart.classList.add("fas");
+  heart.classList.add("fa-heart");
+  const x = e.clientX;
+  const y = e.clientY;
+  const leftOffset = e.target.offsetLeft;
+  const topOffset = e.target.offsetTop;
+  const xInside = x - leftOffset;
+  const yInside = y - topOffset;
+  heart.style.top = `${yInside}px`;
+  heart.style.left = `${xInside}px`;
+  loveMe.appendChild(heart);
+  times.innerHTML = ++timesClicked;
+  setTimeout(() => heart.remove(), 1000);
+};
+
+loveMe.addEventListener("click", (e) => {
+  // you can use dblclick: https://developer.mozilla.org/en-US/docs/Web/API/Element/dblclick_event
+  if (clickTime === 0) clickTime = new Date().getTime();
+  else {
+    if (new Date().getTime() - clickTime < 800) {
+      createHeart(e);
+      clickTime = 0;
+    } else clickTime = new Date().getTime();
+  }
+});
+
+        </script>
+
+  </body>
+</html>
